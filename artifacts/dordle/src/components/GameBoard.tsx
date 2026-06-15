@@ -7,8 +7,8 @@ interface GameBoardProps {
   shakeRow: number | null;
 }
 
-const FLIP_STAGGER = 350;
-const FLIP_DURATION = 600;
+const FLIP_STAGGER = 150;
+const FLIP_DURATION = 280;
 
 function getRevealedStyle(state: LetterState): string {
   switch (state) {

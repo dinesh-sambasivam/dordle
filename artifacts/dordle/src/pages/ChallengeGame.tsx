@@ -67,7 +67,7 @@ function ChallengeGameInner({
   const mountedOver = useRef(gameOver);
   useEffect(() => {
     if (!gameOver) return;
-    const delay = mountedOver.current ? 0 : 2200;
+    const delay = mountedOver.current ? 0 : 1100;
     const t = setTimeout(() => setShowResult(true), delay);
     return () => clearTimeout(t);
   }, [gameOver]);

@@ -222,11 +222,11 @@
   }
 }
 
-/* Game-specific tile flip animation */
+/* Game-specific tile flip animation — vertical squish like Wordle */
 @keyframes tile-flip {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0deg); }
+  0%   { transform: scaleY(1); }
+  50%  { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
 }
 
 @keyframes tile-pop {
@@ -248,7 +248,7 @@
 }
 
 .tile-flip {
-  animation: tile-flip 0.5s ease-in-out forwards;
+  animation: tile-flip 0.28s ease-in-out forwards;
 }
 
 .tile-pop {

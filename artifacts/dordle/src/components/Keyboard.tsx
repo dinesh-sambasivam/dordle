@@ -74,7 +74,7 @@ export default function Keyboard({ keyboardState, onKey }: KeyboardProps) {
             <Key
               key={key}
               label={key}
-              state={key.length === 1 ? keyboardState[key] : undefined}
+              state={key.length === 1 ? keyboardState[key.toLowerCase()] : undefined}
               onKey={onKey}
               wide={key === "ENTER" || key === "BACKSPACE"}
             />

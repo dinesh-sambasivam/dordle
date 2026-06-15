@@ -49,7 +49,7 @@ export function useGame(
   // preventing the next guess from interrupting the flip animation.
   const [revealing, setRevealing] = useState(false);
   const prevGuessCount = useRef(gameState.guesses.length);
-  const REVEAL_LOCK_MS = 5 * 350 + 600;
+  const REVEAL_LOCK_MS = 5 * 150 + 280 + 100;
   useEffect(() => {
     const count = gameState.guesses.length;
     if (count > prevGuessCount.current) {
