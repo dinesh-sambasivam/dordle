@@ -35,27 +35,23 @@ function Key({ label, state, onKey, wide }: {
   return (
     <button
       data-testid={`key-${label.toLowerCase()}`}
-      onMouseDown={(e) => {
-        e.preventDefault();
-        onKey(label);
-      }}
-      onTouchStart={(e) => {
+      onPointerDown={(e) => {
         e.preventDefault();
         onKey(label);
       }}
       className={`
         no-select flex items-center justify-center
-        rounded font-bold text-xs uppercase
+        rounded font-bold uppercase
         border transition-colors active:scale-95
-        ${wide ? "flex-[1.5] min-w-0 px-1 h-14" : "flex-1 min-w-0 h-14"}
-        ${isSpecial ? "text-[10px]" : "text-sm"}
+        ${wide ? "flex-[1.5] min-w-0 px-1 h-16" : "flex-1 min-w-0 h-16"}
+        ${isSpecial ? "text-[11px]" : "text-base"}
         ${getKeyStyle(isSpecial ? undefined : state)}
         cursor-pointer touch-manipulation
       `}
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
       {label === "BACKSPACE" ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
           <line x1="15" y1="9" x2="9" y2="15" />
           <line x1="9" y1="9" x2="15" y2="15" />
@@ -67,9 +63,9 @@ function Key({ label, state, onKey, wide }: {
 
 export default function Keyboard({ keyboardState, onKey }: KeyboardProps) {
   return (
-    <div className="w-full max-w-[400px] mx-auto px-1" data-testid="keyboard">
+    <div className="w-full max-w-[500px] mx-auto px-1" data-testid="keyboard">
       {ROWS.map((row, i) => (
-        <div key={i} className="flex gap-1 justify-center mb-1">
+        <div key={i} className="flex gap-1.5 justify-center mb-1.5">
           {row.map((key) => (
             <Key
               key={key}
