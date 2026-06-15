@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { evaluateGuess, buildKeyboardState, GuessLetter, KeyboardState } from "@/lib/gameState";
 import { isValidWord } from "@/data/validWords";
 import { saveDailyProgress, loadDailyProgress, DailyProgress } from "@/lib/cookies";
@@ -45,6 +45,24 @@ export function useGame(
     };
   });
 
+  // Lock input while a submitted row is revealing, matching Wordle behavior and
+  // preventing the next guess from interrupting the flip animation.
+  const [revealing, setRevealing] = useState(false);
+  const prevGuessCount = useRef(gameState.guesses.length);
+  const REVEAL_LOCK_MS = 5 * 350 + 600;
+  useEffect(() => {
+    const count = gameState.guesses.length;
+    if (count > prevGuessCount.current) {
+      prevGuessCount.current = count;
+      setRevealing(true);
+      const t = setTimeout(() => setRevealing(false), REVEAL_LOCK_MS);
+      return () => clearTimeout(t);
+    }
+    prevGuessCount.current = count;
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.guesses.length]);
+
   // Save progress on change
   useEffect(() => {
     if (mode === "daily" && dailyNumber !== undefined) {
@@ -61,7 +79,7 @@ export function useGame(
   }, [gameState.guesses, gameState.gameOver, gameState.won, mode, dailyNumber]);
 
   const onKeyPress = useCallback((key: string) => {
-    if (gameState.gameOver) return;
+    if (gameState.gameOver || revealing) return;
 
     setGameState((prev) => {
       // Clear shake/invalid state
@@ -114,7 +132,7 @@ export function useGame(
 
       return prev;
     });
-  }, [gameState.gameOver, targetWord]);
+  }, [gameState.gameOver, revealing, targetWord]);
 
   // Handle hardware keyboard
   useEffect(() => {

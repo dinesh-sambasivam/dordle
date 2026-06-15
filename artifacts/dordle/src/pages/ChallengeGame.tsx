@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
 import { getChallengeWord } from "@/data/challengeWords";
 import { useGame } from "@/hooks/useGame";
@@ -64,6 +64,14 @@ function ChallengeGameInner({
   const { guesses, currentGuess, gameOver, won, keyboardState, shakeRow, invalidWordMessage, onKeyPress } =
     useGame(targetWord, "challenge", undefined, num);
 
+  const mountedOver = useRef(gameOver);
+  useEffect(() => {
+    if (!gameOver) return;
+    const delay = mountedOver.current ? 0 : 2200;
+    const t = setTimeout(() => setShowResult(true), delay);
+    return () => clearTimeout(t);
+  }, [gameOver]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background" data-testid="challenge-game">
       <Header
@@ -107,7 +115,7 @@ function ChallengeGameInner({
         </div>
       </div>
 
-      {(showResult || (gameOver && won)) && (
+      {showResult && (
         <ResultModal
           won={won}
           guesses={guesses}

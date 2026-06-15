@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { getDailyWord, getDailyNumber } from "@/data/dailyWords";
+import { useState, useEffect, useRef } from "react";
+import { getDailyWord, getDailyNumber, getTodayDateLabel } from "@/data/dailyWords";
 import { useGame } from "@/hooks/useGame";
 import Header from "@/components/Header";
 import GameBoard from "@/components/GameBoard";
@@ -9,22 +9,34 @@ import ResultModal from "@/components/ResultModal";
 export default function DailyGame() {
   const targetWord = getDailyWord();
   const dailyNumber = getDailyNumber();
+  const dateLabel = getTodayDateLabel();
   const [showResult, setShowResult] = useState(false);
 
   const { guesses, currentGuess, gameOver, won, keyboardState, shakeRow, invalidWordMessage, onKeyPress } =
     useGame(targetWord, "daily", dailyNumber);
 
-  const handleShowResult = () => setShowResult(true);
+  const mountedOver = useRef(gameOver);
+  useEffect(() => {
+    if (!gameOver) return;
+    const delay = mountedOver.current ? 0 : 2200;
+    const t = setTimeout(() => setShowResult(true), delay);
+    return () => clearTimeout(t);
+  }, [gameOver]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background" data-testid="daily-game">
-      <Header subtitle={`Dordle #${dailyNumber}`} />
+      <Header subtitle="Word of the Day" />
 
-      <div className="flex-1 flex flex-col items-center justify-between py-2 px-2 max-w-[400px] w-full mx-auto">
+      <div className="max-w-[400px] w-full mx-auto px-4 pt-3 pb-1 text-center">
+        <p className="text-sm font-semibold text-foreground" data-testid="text-date">{dateLabel}</p>
+        <p className="text-xs text-muted-foreground" data-testid="text-puzzle-number">Dordle #{dailyNumber}</p>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-between py-1 px-2 max-w-[400px] w-full mx-auto">
         {invalidWordMessage && (
           <div
             data-testid="invalid-word-message"
-            className="fixed top-20 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs font-bold px-4 py-2 rounded-full z-40 shadow-md"
+            className="fixed top-24 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs font-bold px-4 py-2 rounded-full z-40 shadow-md"
           >
             {invalidWordMessage}
           </div>
@@ -41,7 +53,7 @@ export default function DailyGame() {
         {gameOver && !showResult && (
           <button
             data-testid="button-show-result"
-            onClick={handleShowResult}
+            onClick={() => setShowResult(true)}
             className="mb-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
           >
             See Results
@@ -53,7 +65,7 @@ export default function DailyGame() {
         </div>
       </div>
 
-      {(showResult || (gameOver && won)) && (
+      {showResult && (
         <ResultModal
           won={won}
           guesses={guesses}

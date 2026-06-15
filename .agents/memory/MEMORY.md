@@ -1,0 +1,1 @@
+- [Parsing xlsx without libs](xlsx-parsing.md) — extract Excel data in this env using a manual ZIP inflate in Node (no xlsx pkg, no python/unzip available).
