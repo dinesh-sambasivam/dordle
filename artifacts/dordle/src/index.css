@@ -222,11 +222,14 @@
   }
 }
 
-/* Game-specific tile flip animation — vertical squish like Wordle */
-@keyframes tile-flip {
-  0%   { transform: scaleY(1); }
-  50%  { transform: scaleY(0); }
-  100% { transform: scaleY(1); }
+/* Tile flip animation — first half folds the tile away, second half unfolds with color */
+@keyframes tile-flip-out {
+  from { transform: perspective(300px) rotateX(0deg); }
+  to   { transform: perspective(300px) rotateX(-90deg); }
+}
+@keyframes tile-flip-in {
+  from { transform: perspective(300px) rotateX(90deg); }
+  to   { transform: perspective(300px) rotateX(0deg); }
 }
 
 @keyframes tile-pop {
@@ -247,8 +250,11 @@
   100% { transform: scale(1); }
 }
 
-.tile-flip {
-  animation: tile-flip 0.28s ease-in-out forwards;
+.tile-flip-out {
+  animation: tile-flip-out 0.2s ease-in forwards;
+}
+.tile-flip-in {
+  animation: tile-flip-in 0.2s ease-out forwards;
 }
 
 .tile-pop {

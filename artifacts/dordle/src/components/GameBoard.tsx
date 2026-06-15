@@ -7,8 +7,8 @@ interface GameBoardProps {
   shakeRow: number | null;
 }
 
-const FLIP_STAGGER = 150;
-const FLIP_DURATION = 280;
+const FLIP_STAGGER = 150;  // ms between each tile starting its flip
+const FLIP_HALF = 200;     // ms for each half of the flip (total = 400ms)
 
 function getRevealedStyle(state: LetterState): string {
   switch (state) {
@@ -23,52 +23,62 @@ function getRevealedStyle(state: LetterState): string {
   }
 }
 
+type TilePhase = "pre" | "out" | "in" | "done";
+
 function CompletedRow({ row, animate }: { row: GuessLetter[]; animate: boolean }) {
-  // Freeze the animation decision at mount so incidental rerenders that flip
-  // `animate` to false cannot cancel a reveal in progress.
+  // Freeze the animation decision at mount so incidental rerenders cannot
+  // cancel a reveal in progress.
   const [shouldAnimate] = useState(animate);
-  const [colorShown, setColorShown] = useState<boolean[]>(() => row.map(() => !shouldAnimate));
+  const [phase, setPhase] = useState<TilePhase[]>(() =>
+    row.map(() => (shouldAnimate ? "pre" : "done"))
+  );
 
   useEffect(() => {
     if (!shouldAnimate) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     row.forEach((_, i) => {
-      const t = setTimeout(() => {
-        setColorShown((prev) => {
-          const next = [...prev];
-          next[i] = true;
-          return next;
-        });
-      }, i * FLIP_STAGGER + FLIP_DURATION / 2);
-      timers.push(t);
+      const base = i * FLIP_STAGGER;
+      // fold away
+      timers.push(setTimeout(() => {
+        setPhase((p) => { const n = [...p]; n[i] = "out"; return n; });
+      }, base));
+      // colour visible, unfold
+      timers.push(setTimeout(() => {
+        setPhase((p) => { const n = [...p]; n[i] = "in"; return n; });
+      }, base + FLIP_HALF));
+      // animation class removed, tile stays coloured
+      timers.push(setTimeout(() => {
+        setPhase((p) => { const n = [...p]; n[i] = "done"; return n; });
+      }, base + FLIP_HALF * 2));
     });
-    // Safety net: ensure every tile is revealed once the full sequence elapses,
-    // even if a timer is interrupted.
-    const finalTimer = setTimeout(() => {
-      setColorShown(row.map(() => true));
-    }, row.length * FLIP_STAGGER + FLIP_DURATION);
-    timers.push(finalTimer);
+    // Safety net
+    timers.push(setTimeout(() => {
+      setPhase(row.map(() => "done"));
+    }, row.length * FLIP_STAGGER + FLIP_HALF * 2 + 100));
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAnimate]);
 
   return (
     <div className="grid grid-cols-5 gap-1.5">
-      {row.map((cell, i) => (
-        <div
-          key={i}
-          data-testid={`tile-revealed-${cell.letter}`}
-          className={`
-            w-full aspect-square flex items-center justify-center
-            text-2xl font-bold uppercase rounded-sm border-2 select-none
-            ${colorShown[i] ? getRevealedStyle(cell.state) : "bg-card border-border text-foreground"}
-            ${animate ? "tile-flip" : ""}
-          `}
-          style={animate ? { animationDelay: `${i * FLIP_STAGGER}ms`, animationDuration: `${FLIP_DURATION}ms` } : {}}
-        >
-          {cell.letter}
-        </div>
-      ))}
+      {row.map((cell, i) => {
+        const coloured = phase[i] === "in" || phase[i] === "done";
+        return (
+          <div
+            key={i}
+            data-testid={`tile-revealed-${cell.letter}`}
+            className={`
+              w-full aspect-square flex items-center justify-center
+              text-2xl font-bold uppercase rounded-sm border-2 select-none
+              ${coloured ? getRevealedStyle(cell.state) : "bg-card border-border text-foreground"}
+              ${phase[i] === "out" ? "tile-flip-out" : ""}
+              ${phase[i] === "in" ? "tile-flip-in" : ""}
+            `}
+          >
+            {cell.letter}
+          </div>
+        );
+      })}
     </div>
   );
 }

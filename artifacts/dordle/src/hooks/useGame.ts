@@ -45,18 +45,52 @@ export function useGame(
     };
   });
 
-  // Lock input while a submitted row is revealing, matching Wordle behavior and
-  // preventing the next guess from interrupting the flip animation.
+  // Must match FLIP_STAGGER / FLIP_HALF constants in GameBoard.tsx
+  const FLIP_STAGGER_MS = 150;
+  const FLIP_HALF_MS = 200;
+  const REVEAL_LOCK_MS = 5 * FLIP_STAGGER_MS + FLIP_HALF_MS * 2 + 100;
+
+  // displayedKeyboardState updates one key at a time, in sync with each tile's
+  // flip midpoint, so the keyboard colour change is visually tied to the reveal.
+  const [displayedKeyboardState, setDisplayedKeyboardState] = useState<KeyboardState>(() => {
+    if (mode === "daily" && dailyNumber !== undefined) {
+      const saved = loadDailyProgress(dailyNumber);
+      if (saved && saved.date === new Date().toISOString().split("T")[0]) {
+        return buildKeyboardState(saved.guesses);
+      }
+    }
+    return {};
+  });
+
   const [revealing, setRevealing] = useState(false);
   const prevGuessCount = useRef(gameState.guesses.length);
-  const REVEAL_LOCK_MS = 5 * 150 + 280 + 100;
+
   useEffect(() => {
     const count = gameState.guesses.length;
     if (count > prevGuessCount.current) {
       prevGuessCount.current = count;
       setRevealing(true);
-      const t = setTimeout(() => setRevealing(false), REVEAL_LOCK_MS);
-      return () => clearTimeout(t);
+      const lockTimer = setTimeout(() => setRevealing(false), REVEAL_LOCK_MS);
+
+      // Update each keyboard key at the exact midpoint of its tile's flip
+      const newRow = gameState.guesses[count - 1];
+      const kbTimers = newRow.map((cell, i) =>
+        setTimeout(() => {
+          setDisplayedKeyboardState((prev) => {
+            const priority: Record<string, number> = { correct: 3, present: 2, absent: 1, empty: 0, filled: 0 };
+            const curr = prev[cell.letter];
+            if (!curr || (priority[cell.state] ?? 0) > (priority[curr] ?? 0)) {
+              return { ...prev, [cell.letter]: cell.state };
+            }
+            return prev;
+          });
+        }, i * FLIP_STAGGER_MS + FLIP_HALF_MS)
+      );
+
+      return () => {
+        clearTimeout(lockTimer);
+        kbTimers.forEach(clearTimeout);
+      };
     }
     prevGuessCount.current = count;
     return undefined;
@@ -153,6 +187,7 @@ export function useGame(
 
   return {
     ...gameState,
+    keyboardState: displayedKeyboardState,
     onKeyPress,
   };
 }
