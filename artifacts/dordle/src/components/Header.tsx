@@ -11,7 +11,7 @@ interface HeaderProps {
 export default function Header({ title = "Dordle", subtitle, showBack, backHref = "/", backLabel = "Today's Word" }: HeaderProps) {
   return (
     <header className="w-full border-b border-border bg-card/80 backdrop-blur-sm">
-      <div className="max-w-[400px] mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="max-w-[400px] mx-auto px-4 h-11 sm:h-14 flex items-center justify-between">
         {showBack ? (
           <Link href={backHref}>
             <button

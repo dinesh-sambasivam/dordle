@@ -251,10 +251,10 @@
 }
 
 .tile-flip-out {
-  animation: tile-flip-out 0.2s ease-in forwards;
+  animation: tile-flip-out 0.25s ease-in forwards;
 }
 .tile-flip-in {
-  animation: tile-flip-in 0.2s ease-out forwards;
+  animation: tile-flip-in 0.25s ease-out forwards;
 }
 
 .tile-pop {

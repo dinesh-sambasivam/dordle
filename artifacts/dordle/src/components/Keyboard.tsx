@@ -43,7 +43,7 @@ function Key({ label, state, onKey, wide }: {
         no-select flex items-center justify-center
         rounded font-bold uppercase
         border transition-colors active:scale-95
-        ${wide ? "flex-[1.5] min-w-0 px-1 h-16" : "flex-1 min-w-0 h-16"}
+        ${wide ? "flex-[1.5] min-w-0 px-1 h-12 sm:h-14" : "flex-1 min-w-0 h-12 sm:h-14"}
         ${isSpecial ? "text-[11px]" : "text-base"}
         ${getKeyStyle(isSpecial ? undefined : state)}
         cursor-pointer touch-manipulation
@@ -65,7 +65,7 @@ export default function Keyboard({ keyboardState, onKey }: KeyboardProps) {
   return (
     <div className="w-full max-w-[500px] mx-auto px-1" data-testid="keyboard">
       {ROWS.map((row, i) => (
-        <div key={i} className="flex gap-1.5 justify-center mb-1.5">
+        <div key={i} className="flex gap-1 sm:gap-1.5 justify-center mb-1 sm:mb-1.5">
           {row.map((key) => (
             <Key
               key={key}

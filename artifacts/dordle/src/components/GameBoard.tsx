@@ -7,8 +7,8 @@ interface GameBoardProps {
   shakeRow: number | null;
 }
 
-const FLIP_STAGGER = 150;  // ms between each tile starting its flip
-const FLIP_HALF = 200;     // ms for each half of the flip (total = 400ms)
+const FLIP_STAGGER = 300;  // ms between each tile starting its flip
+const FLIP_HALF = 250;     // ms for each half of the flip (total = 500ms)
 
 function getRevealedStyle(state: LetterState): string {
   switch (state) {
@@ -60,7 +60,7 @@ function CompletedRow({ row, animate }: { row: GuessLetter[]; animate: boolean }
   }, [shouldAnimate]);
 
   return (
-    <div className="grid grid-cols-5 gap-1.5">
+    <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
       {row.map((cell, i) => {
         const coloured = phase[i] === "in" || phase[i] === "done";
         return (
@@ -69,7 +69,7 @@ function CompletedRow({ row, animate }: { row: GuessLetter[]; animate: boolean }
             data-testid={`tile-revealed-${cell.letter}`}
             className={`
               w-full aspect-square flex items-center justify-center
-              text-2xl font-bold uppercase rounded-sm border-2 select-none
+              text-xl sm:text-2xl font-bold uppercase rounded-sm border-2 select-none
               ${coloured ? getRevealedStyle(cell.state) : "bg-card border-border text-foreground"}
               ${phase[i] === "out" ? "tile-flip-out" : ""}
               ${phase[i] === "in" ? "tile-flip-in" : ""}
@@ -89,7 +89,7 @@ function CurrentRow({ currentGuess, shake }: { currentGuess: string; shake: bool
     .map((_, i) => currentGuess[i] || "");
 
   return (
-    <div className={`grid grid-cols-5 gap-1.5 ${shake ? "row-shake" : ""}`} data-testid="current-row">
+    <div className={`grid grid-cols-5 gap-1 sm:gap-1.5 ${shake ? "row-shake" : ""}`} data-testid="current-row">
       {cells.map((letter, i) => (
         <CurrentTile key={i} letter={letter} />
       ))}
@@ -116,7 +116,7 @@ function CurrentTile({ letter }: { letter: string }) {
       data-testid={`tile-current-${letter || "empty"}`}
       className={`
         w-full aspect-square flex items-center justify-center
-        text-2xl font-bold uppercase rounded-sm border-2 select-none
+        text-xl sm:text-2xl font-bold uppercase rounded-sm border-2 select-none
         bg-card text-foreground
         ${letter ? "border-muted-foreground" : "border-border"}
       `}
@@ -128,7 +128,7 @@ function CurrentTile({ letter }: { letter: string }) {
 
 function EmptyRow() {
   return (
-    <div className="grid grid-cols-5 gap-1.5">
+    <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
       {Array(5)
         .fill(null)
         .map((_, i) => (
@@ -150,7 +150,7 @@ export default function GameBoard({ guesses, currentGuess, shakeRow }: GameBoard
   }, [guesses.length]);
 
   return (
-    <div className="flex flex-col gap-1.5 w-full max-w-[300px] mx-auto" data-testid="game-board">
+    <div className="flex flex-col gap-1 sm:gap-1.5 w-full max-w-[240px] sm:max-w-[300px] mx-auto" data-testid="game-board">
       {Array(6)
         .fill(null)
         .map((_, rowIdx) => {

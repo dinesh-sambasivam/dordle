@@ -67,13 +67,13 @@ function ChallengeGameInner({
   const mountedOver = useRef(gameOver);
   useEffect(() => {
     if (!gameOver) return;
-    const delay = mountedOver.current ? 0 : 1400;
+    const delay = mountedOver.current ? 0 : 1900;
     const t = setTimeout(() => setShowResult(true), delay);
     return () => clearTimeout(t);
   }, [gameOver]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" data-testid="challenge-game">
+    <div className="h-[100dvh] overflow-hidden flex flex-col bg-background" data-testid="challenge-game">
       <Header
         title="Dordle"
         subtitle={`Challenge #${num}`}
@@ -82,7 +82,7 @@ function ChallengeGameInner({
         backLabel="All Challenges"
       />
 
-      <div className="flex-1 flex flex-col items-center justify-between py-2 px-2 max-w-[400px] w-full mx-auto">
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 px-2 max-w-[400px] w-full mx-auto">
         {invalidWordMessage && (
           <div
             data-testid="invalid-word-message"
@@ -92,25 +92,23 @@ function ChallengeGameInner({
           </div>
         )}
 
-        <div className="flex-1 flex items-center justify-center w-full py-2">
-          <GameBoard
-            guesses={guesses}
-            currentGuess={currentGuess}
-            shakeRow={shakeRow}
-          />
-        </div>
+        <GameBoard
+          guesses={guesses}
+          currentGuess={currentGuess}
+          shakeRow={shakeRow}
+        />
 
         {gameOver && !showResult && (
           <button
             data-testid="button-show-result"
             onClick={() => setShowResult(true)}
-            className="mb-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+            className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
           >
             See Results
           </button>
         )}
 
-        <div className="w-full pb-2">
+        <div className="w-full">
           <Keyboard keyboardState={keyboardState} onKey={onKeyPress} />
         </div>
       </div>

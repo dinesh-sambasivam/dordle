@@ -46,8 +46,8 @@ export function useGame(
   });
 
   // Must match FLIP_STAGGER / FLIP_HALF constants in GameBoard.tsx
-  const FLIP_STAGGER_MS = 150;
-  const FLIP_HALF_MS = 200;
+  const FLIP_STAGGER_MS = 300;
+  const FLIP_HALF_MS = 250;
   const REVEAL_LOCK_MS = 5 * FLIP_STAGGER_MS + FLIP_HALF_MS * 2 + 100;
 
   // displayedKeyboardState updates one key at a time, in sync with each tile's
