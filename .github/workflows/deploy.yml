@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Build Dordle
+        run: pnpm --filter @workspace/dordle run build
+        env:
+          # If your repo is named "dordle", the site lives at username.github.io/dordle
+          # and BASE_PATH must be "/dordle/" — this line sets it automatically.
+          # If your repo is named exactly "username.github.io" (a user/org page),
+          # change the line below to:  BASE_PATH: /
+          BASE_PATH: /${{ github.event.repository.name }}/
+          PORT: 3000
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          # vite.config.ts builds into dist/public — upload that exact folder
+          path: artifacts/dordle/dist/public
+
+  publish:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

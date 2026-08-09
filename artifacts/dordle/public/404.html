@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dordle</title>
+    <script>
+      // GitHub Pages returns this file for any URL that isn't a real file.
+      // We encode the full path into the query string and redirect to index.html,
+      // which will decode it and hand it to the React router.
+      var l = window.location;
+      var segmentCount = 1; // number of path segments in BASE_PATH (e.g. 1 for /dordle/)
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?p=/' +
+        l.pathname.split('/').slice(1 + segmentCount).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
