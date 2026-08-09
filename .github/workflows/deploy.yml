@@ -10,30 +10,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
-      - run: pnpm install
+      - name: Strip Replit-specific pnpm settings
+        run: |
+          node -e "
+          const fs = require('fs');
+          let yaml = fs.readFileSync('pnpm-workspace.yaml', 'utf8');
+
+          // Remove 'overrides:' block — uses Replit-specific '-' syntax that standard pnpm rejects
+          yaml = yaml.replace(/^overrides:[\s\S]*?(?=^\w|\s*$)/m, '');
+
+          // Remove minimumReleaseAge and minimumReleaseAgeExclude — Replit-only feature
+          yaml = yaml.replace(/minimumReleaseAge:.*\n/g, '');
+          yaml = yaml.replace(/minimumReleaseAgeExclude:[\s\S]*?(?=^\w)/m, '');
+
+          // Remove onlyBuiltDependencies — can block native binary setup in CI
+          yaml = yaml.replace(/onlyBuiltDependencies:[\s\S]*?(?=^\w)/m, '');
+
+          fs.writeFileSync('pnpm-workspace.yaml', yaml);
+          console.log('Cleaned pnpm-workspace.yaml for CI');
+          "
+
+      - run: pnpm install --no-frozen-lockfile
 
       - name: Build Dordle
         run: pnpm --filter @workspace/dordle run build
         env:
-          # If your repo is named "dordle", the site lives at username.github.io/dordle
-          # and BASE_PATH must be "/dordle/" — this line sets it automatically.
-          # If your repo is named exactly "username.github.io" (a user/org page),
-          # change the line below to:  BASE_PATH: /
+          # Site will be at: https://dinesh-sambasivam.github.io/dordle/
+          # If you rename the repo, this updates automatically.
           BASE_PATH: /${{ github.event.repository.name }}/
           PORT: 3000
+          NODE_ENV: production
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          # vite.config.ts builds into dist/public — upload that exact folder
           path: artifacts/dordle/dist/public
 
   publish:
