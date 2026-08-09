@@ -17,35 +17,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
-      - name: Strip Replit-specific pnpm settings
+      - name: Prepare workspace for CI
         run: |
           node -e "
           const fs = require('fs');
+
+          // Strip Replit-specific settings from pnpm-workspace.yaml
+          // Standard pnpm does not support the '-' override syntax or minimumReleaseAge
           let yaml = fs.readFileSync('pnpm-workspace.yaml', 'utf8');
+          // Keep only the 'packages:' and 'catalog:' sections
+          const packagesMatch = yaml.match(/^packages:[\s\S]*?(?=^\w)/m);
+          const catalogMatch = yaml.match(/^catalog:[\s\S]*/m);
+          const clean = (packagesMatch ? packagesMatch[0] : '') + (catalogMatch ? catalogMatch[0] : '');
+          fs.writeFileSync('pnpm-workspace.yaml', clean);
+          console.log('Cleaned pnpm-workspace.yaml');
 
-          // Remove 'overrides:' block — uses Replit-specific '-' syntax that standard pnpm rejects
-          yaml = yaml.replace(/^overrides:[\s\S]*?(?=^\w|\s*$)/m, '');
-
-          // Remove minimumReleaseAge and minimumReleaseAgeExclude — Replit-only feature
-          yaml = yaml.replace(/minimumReleaseAge:.*\n/g, '');
-          yaml = yaml.replace(/minimumReleaseAgeExclude:[\s\S]*?(?=^\w)/m, '');
-
-          // Remove onlyBuiltDependencies — can block native binary setup in CI
-          yaml = yaml.replace(/onlyBuiltDependencies:[\s\S]*?(?=^\w)/m, '');
-
-          fs.writeFileSync('pnpm-workspace.yaml', yaml);
-          console.log('Cleaned pnpm-workspace.yaml for CI');
+          // Delete the lockfile so pnpm resolves fresh without the baked-in '-' overrides
+          fs.rmSync('pnpm-lock.yaml', { force: true });
+          console.log('Removed pnpm-lock.yaml for clean resolve');
           "
 
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install
 
       - name: Build Dordle
         run: pnpm --filter @workspace/dordle run build
         env:
-          # Site will be at: https://dinesh-sambasivam.github.io/dordle/
-          # If you rename the repo, this updates automatically.
           BASE_PATH: /${{ github.event.repository.name }}/
           PORT: 3000
           NODE_ENV: production
