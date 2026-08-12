@@ -703,6 +703,8 @@ export const DAILY_WORDS: string[] = [
   "gruff"
 ];
 
+const DORDLE_START_DATE = "2026-06-15";
+
 export function getDailyWordIndex(date?: Date): number {
   const d = date || new Date();
   const start = new Date(DORDLE_START_DATE);
